@@ -1,0 +1,11 @@
+## Interface: 11200
+## Title: |cffffffff[|r |cffff6060Matrix Maps|r|cffffffff ] - ALPHA
+## Notes: A SexyMaps-Rework for World of Warcraft Vanilla
+## Version: 1.0
+## Author: Guzruul
+## SavedVariables: MMaps_DB
+
+init.lua
+profiles.lua
+functions.lua
+gui.lua
