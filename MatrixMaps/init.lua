@@ -1,49 +1,98 @@
--- Project: MatrixMaps
--- Add new functions into functions.lua, then add defaults to profiles.lua,
--- call it here in our bootloader and add GUI elements to gui.lua
+-- --==================================================
+-- -- MatrixMaps -- How to modify this addon:
+-- -- Add new functions to functions.lua, add defaults
+-- -- to profiles.lua, then add GUI elements to gui.lua
+-- --==================================================
 
-MMaps = CreateFrame("Frame", "MMaps", UIParent)
+local ADDON_NAME = "MatrixMaps"
+
+MMaps = CreateFrame("Frame", ADDON_NAME, UIParent)
 MMaps:RegisterEvent("VARIABLES_LOADED")
+MMaps:RegisterEvent("PLAYER_LOGIN")
+
+-- --==================================================
+-- -- tables section
+-- --==================================================
 
 MMaps_DB = {}
-
-local addonInfo = {
-    name = "MatrixMaps",
-    version = "1.0",
-    stage = "Alpha",
-    author = "Guzruul",
-    url = "Turtle Forum > Addons > MatrixMaps",
+MMaps_DB.profiles = {}
+MMaps.addonInfo = {
+    name    = GetAddOnMetadata(ADDON_NAME, "X-name")   or "Unknown",
+    version = GetAddOnMetadata(ADDON_NAME, "Version")  or "Unknown",
+    url     = GetAddOnMetadata(ADDON_NAME, "X-url")    or "Unknown",
 }
 
+-- --==================================================
+-- -- generic section
+-- --==================================================
+
+local debug = false
+
 function print(msg)
-    DEFAULT_CHAT_FRAME:AddMessage("|cffff6060MatrixMaps:|r " .. (msg or "nil"))
+    if type(msg) == "table" then
+        local t = {}
+        for k, v in pairs(msg) do
+            table.insert(t, k .. "=" .. tostring(v))
+        end
+        DEFAULT_CHAT_FRAME:AddMessage("|cffff6060" .. MMaps.addonInfo.name .. "|r: " .. table.concat(t, "\n"))
+    else
+        DEFAULT_CHAT_FRAME:AddMessage("|cffff6060" .. MMaps.addonInfo.name .. "|r: " .. (msg or "nil"))
+    end
 end
 
-function MMaps.FuncLoader()
-    MMaps.HideStuff()
-    MMaps.UpdateMinimap()
-    MMaps.UpdateMovable()
-    MMaps.UpdateZoom()
-    MMaps.UpdateAutoZoomOut()
-    MMaps.UpdateShape()
-    MMaps.UpdateBorder()
-    MMaps.UpdateGameTimeZoomClose()
-    MMaps.UpdateBorderTop()
-    MMaps.UpdateRotatingBorder()
-    MMaps.UpdateRotatingSpeed()
-    MMaps.UpdateRotatingScale()
-    MMaps.UpdateTexColour()
-    MMaps.UpdateSnowfall()
+function MMaps.Debug(msg)
+    if debug then
+        print("[DEBUG] " .. (msg or "nil"))
+        -- print(debugstack(2, 3, 0)) -- Print the call stack for debugging
+    end
+end
+
+function MMaps.SafeCall(func)
+    local success, err = pcall(func)
+    if not success then
+        MMaps.Debug("Error: " .. err)
+    end
+end
+
+function MMaps.TrackTime(label, func)
+    local start = GetTime()
+    func()
+    local duration = (GetTime() - start) * 1000  -- ms
+
+    local class
+    if duration < 1 then
+        class = "FAST"
+    elseif duration < 10 then
+        class = "MEDIUM"
+    else
+        class = "SLOW"
+    end
+
+    MMaps.Debug("[" .. label .. "] took " .. format("%.2f", duration) .. "ms (" .. class .. ")")
+end
+
+-- --==================================================
+-- -- init section
+-- --==================================================
+
+local function Greeting()
+    local unit = UnitName("player")
+    if not MMaps_DB.profiles[unit] or MMaps_DB.profiles[unit].greeting == false then return end
+
+    print("Welcome to |cffff6060" .. MMaps.addonInfo.name .. "|r v" .. MMaps.addonInfo.version)
+    print("[ |cffff6060Shift-Right-Click|r ] the Minimap")
+    print("Report bugs @ |cffff6060" .. MMaps.addonInfo.url .. "|r")
 end
 
 MMaps:SetScript("OnEvent", function()
-    print("Loaded -  Open the GUI via:")
-    print("[ |cffff6060/ mmaps|r ] or [ |cffff6060Shift-RightClick|r ]")
-    print(addonInfo.stage .. " version (V" .. addonInfo.version .. ")")
-    print("Report bugs|r @ |cffff6060" .. addonInfo.url .. "|r")
+    if event == "VARIABLES_LOADED" then
+        MMaps.Debug("VARIABLES_LOADED fired")
 
-    MMaps.InitProfiles()
-    MMaps.FuncLoader()
-    MMaps.SetDefaultPosition()
-    MMaps:UnregisterEvent("VARIABLES_LOADED")
+        MMaps.InitProfiles()
+        MMaps.executeAllFunctions()
+
+        Greeting()
+
+        MMaps:UnregisterEvent("VARIABLES_LOADED")
+    end
 end)

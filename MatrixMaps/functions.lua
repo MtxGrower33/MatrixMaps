@@ -1,9 +1,15 @@
--- Main function file for MatrixMaps
+-- --==================================================
+-- -- functions section
+-- --==================================================
 
--- hide stuff lol
-function MMaps.HideStuff()
+MMaps.f = {} -- for auto execute and performance monitoring
+local MMaps = MMaps
+
+-- hide stuff
+function MMaps.f.HideStuff()
+    MMaps.Debug("HideStuff() called")
+
     Minimap:SetClampedToScreen(true)
-
 
     MinimapBorder:Hide()
     MinimapBorderTop:Hide()
@@ -26,7 +32,7 @@ function MMaps.HideStuff()
 end
 
 -- minimap default position
-function MMaps.SetDefaultPosition()
+function MMaps.f.SetDefaultPosition()
     local profile = MMaps.GetProfile()
 
     if not profile.defaultPositionSet then
@@ -49,24 +55,31 @@ function MMaps.ToggleMinimap()
     if Minimap:IsVisible() then
         Minimap:Hide()
         profile.minimap = false
+        MMaps.Debug("Minimap hidden")
     else
         Minimap:Show()
         profile.minimap = true
+        MMaps.Debug("Minimap shown")
     end
 end
-function MMaps.UpdateMinimap()
+
+function MMaps.f.UpdateMinimap()
     local profile = MMaps.GetProfile()
 
     if profile.minimap then
         Minimap:Show()
+        MMaps.Debug("UpdateMinimap(): shown")
     else
         Minimap:Hide()
+        MMaps.Debug("UpdateMinimap(): hidden")
     end
 end
 
 -- minimap movable
 function MMaps.ToggleMovable()
     local profile = MMaps.GetProfile()
+
+    MMaps.Debug("Toggling minimap movable state.")
 
     if profile.movable then
         Minimap:SetMovable(false)
@@ -85,8 +98,11 @@ function MMaps.ToggleMovable()
         profile.movable = true
     end
 end
-function MMaps.UpdateMovable()
+
+function MMaps.f.UpdateMovable()
     local profile = MMaps.GetProfile()
+
+    MMaps.Debug("UpdateMovable() called")
 
     if profile.movable then
         Minimap:SetMovable(true)
@@ -119,6 +135,7 @@ function MMaps.ToggleZoom()
         Minimap:EnableMouseWheel(false)
         Minimap:SetScript("OnMouseWheel", nil)
         profile.zoom = false
+        MMaps.Debug("Minimap zoom disabled.")
     else
         Minimap:EnableMouseWheel(true)
         Minimap:SetScript("OnMouseWheel", function()
@@ -130,9 +147,11 @@ function MMaps.ToggleZoom()
             end
         end)
         profile.zoom = true
+        MMaps.Debug("Minimap zoom enabled.")
     end
 end
-function MMaps.UpdateZoom()
+
+function MMaps.f.UpdateZoom()
     local profile = MMaps.GetProfile()
 
     if profile.zoom then
@@ -149,6 +168,7 @@ function MMaps.UpdateZoom()
         Minimap:EnableMouseWheel(false)
         Minimap:SetScript("OnMouseWheel", nil)
     end
+    MMaps.Debug("Minimap zoom called")
 end
 
 -- minimap auto zoom out
@@ -172,7 +192,8 @@ function MMaps.ToggleAutoZoomOut()
         profile.autoZoomOut = true
     end
 end
-function MMaps.UpdateAutoZoomOut()
+
+function MMaps.f.UpdateAutoZoomOut()
     local profile = MMaps.GetProfile()
 
     if profile.autoZoomOut then
@@ -190,6 +211,40 @@ function MMaps.UpdateAutoZoomOut()
     end
 end
 
+-- set minimap alpha
+function MMaps.SetMinimapAlpha(value)
+    local profile = MMaps.GetProfile()
+
+    profile.minimapAlpha = value
+    Minimap:SetAlpha(value)
+    MMaps.Debug("Minimap alpha set to " .. value)
+end
+
+function MMaps.f.UpdateMinimapAlpha()
+    local profile = MMaps.GetProfile()
+
+    local alpha = profile.minimapAlpha or 1.0
+    Minimap:SetAlpha(alpha)
+    MMaps.Debug("Minimap alpha updated to " .. alpha)
+end
+
+-- -- set minimap scale
+-- function MMaps.SetMinimapScale(value)
+--     local profile = MMaps.GetProfile()
+
+--     profile.minimapScale = value
+--     Minimap:SetScale(value)
+--     MMaps.Debug("Minimap scale set to " .. value)
+-- end
+
+-- function MMaps.f.UpdateMinimapScale()
+--     local profile = MMaps.GetProfile()
+
+--     local scale = profile.minimapScale or 1.0
+--     Minimap:SetScale(scale)
+--     MMaps.Debug("Minimap scale updated to " .. scale)
+-- end
+
 -- minimap shape
 local mapShapes = {
     ["Round"] = "Textures\\MinimapMask",
@@ -204,6 +259,7 @@ local mapShapes = {
     ["ULCorner"] = "Interface\\AddOns\\MatrixMaps\\shapes\\bottomright",
     ["URCorner"] = "Interface\\AddOns\\MatrixMaps\\shapes\\bottomleft",
 }
+
 function MMaps.ToggleShape(shape)
     local profile = MMaps.GetProfile()
 
@@ -215,14 +271,17 @@ function MMaps.ToggleShape(shape)
         profile.shape = "Round"
     end
 end
-function MMaps.UpdateShape()
+
+function MMaps.f.UpdateShape()
     local profile = MMaps.GetProfile()
 
     if mapShapes[profile.shape] then
         Minimap:SetMaskTexture(mapShapes[profile.shape])
     end
 end
+
 MMaps.mapShapes = mapShapes
+
 function MMaps.GetNextShape(current)
     local keys = {}
     for k in pairs(mapShapes) do
@@ -262,7 +321,8 @@ function MMaps.ToggleBorder()
         profile.border = "Alternative"
     end
 end
-function MMaps.UpdateBorder()
+
+function MMaps.f.UpdateBorder()
     local profile = MMaps.GetProfile()
 
     if profile.border == "Alternative" then
@@ -272,7 +332,7 @@ function MMaps.UpdateBorder()
     end
 end
 
--- hide gametime, zoom, close
+-- minimap extrabuttons (hide gametime, zoom, close)
 function MMaps.HideGameTimeZoomClose()
     local profile = MMaps.GetProfile()
 
@@ -290,7 +350,8 @@ function MMaps.HideGameTimeZoomClose()
         profile.gametimeZoomClose = true
     end
 end
-function MMaps.UpdateGameTimeZoomClose()
+
+function MMaps.f.UpdateGameTimeZoomClose()
     local profile = MMaps.GetProfile()
 
     if profile.gametimeZoomClose then
@@ -330,7 +391,8 @@ function MMaps.ToggleBorderTop()
     end
 
 end
-function MMaps.UpdateBorderTop()
+
+function MMaps.f.UpdateBorderTop()
     local profile = MMaps.GetProfile()
 
     if profile.borderTop == "Alternative" then
@@ -421,6 +483,7 @@ local function CreateRotatingBorder(data)
         end)
     end
 end
+
 function MMaps.ToggleRotatingBorder()
     local profile = MMaps.GetProfile()
 
@@ -431,16 +494,17 @@ function MMaps.ToggleRotatingBorder()
         if keys[i] == profile.rotatingBorder then
     ---@diagnostic disable-next-line: deprecated
             profile.rotatingBorder = keys[mod(i, table.getn(keys)) + 1]
-            MMaps.UpdateRotatingBorder()
+            MMaps.f.UpdateRotatingBorder()
             return
         end
     end
 
     profile.rotatingBorder = keys[1] -- default to first key if no match is found
 
-    MMaps.UpdateRotatingBorder()
+    MMaps.f.UpdateRotatingBorder()
 end
-function MMaps.UpdateRotatingBorder()
+
+function MMaps.f.UpdateRotatingBorder()
     local profile = MMaps.GetProfile()
     local setting = rotatingTextures[profile.rotatingBorder]
 
@@ -452,19 +516,21 @@ function MMaps.UpdateRotatingBorder()
 
     if setting then
         CreateRotatingBorder(setting)
-        MMaps.UpdateRotatingSpeed()
-        MMaps.UpdateRotatingScale()
+        MMaps.f.UpdateRotatingSpeed()
+        MMaps.f.UpdateRotatingScale()
     end
 end
+
 function MMaps.SetRotatingSpeed(value)
     value = math.min(20, math.max(-20, value))
 
     local profile = MMaps.GetProfile()
     profile.speed = value
 
-    MMaps.UpdateRotatingBorder()
+    MMaps.f.UpdateRotatingBorder()
 end
-function MMaps.UpdateRotatingSpeed()
+
+function MMaps.f.UpdateRotatingSpeed()
     local profile = MMaps.GetProfile()
 
     if MMaps.RotatingFrame and profile.speed then
@@ -489,15 +555,17 @@ function MMaps.UpdateRotatingSpeed()
         end
     end
 end
+
 function MMaps.SetRotatingScale(value)
     value = math.min(3, math.max(0.1, value))
 
     local profile = MMaps.GetProfile()
     profile.scale = value
 
-    MMaps.UpdateRotatingBorder()
+    MMaps.f.UpdateRotatingBorder()
 end
-function MMaps.UpdateRotatingScale()
+
+function MMaps.f.UpdateRotatingScale()
     local profile = MMaps.GetProfile()
 
     if MMaps.RotatingFrame and profile.scale then
@@ -506,6 +574,7 @@ function MMaps.UpdateRotatingScale()
         MMaps.RotatingFrame:SetHeight(155 * scale)
     end
 end
+
 function MMaps.ToggleTexColour()
     local profile = MMaps.GetProfile()
     local colors = {
@@ -546,9 +615,10 @@ function MMaps.ToggleTexColour()
     end
 
     profile.color = colors[profile.colorIndex]
-    MMaps.UpdateRotatingBorder()
+    MMaps.f.UpdateRotatingBorder()
 end
-function MMaps.UpdateTexColour()
+
+function MMaps.f.UpdateTexColour()
     local profile = MMaps.GetProfile()
 
     if MMaps.RotatingFrame and profile.color then
@@ -560,6 +630,7 @@ function MMaps.UpdateTexColour()
         end
     end
 end
+
 function MMaps.ToggleFPSLimit()
     local profile = MMaps.GetProfile()
 
@@ -622,6 +693,7 @@ local function CreateSnowflake()
     flake:Show()
     table.insert(flakes, flake)
 end
+
 local function SnowfallOnUpdate()
     local profile = MMaps.GetProfile()
     local snowEnabled = profile.snowEnabled
@@ -673,6 +745,7 @@ local function SnowfallOnUpdate()
         end
     end
 end
+
 snowfall:SetScript("OnUpdate", SnowfallOnUpdate)
 
 -- FPS limiter for snowfall
@@ -704,7 +777,7 @@ function MMaps.ToggleSnowfall()
 end
 
 -- update snowfall visibility based on profile
-function MMaps.UpdateSnowfall()
+function MMaps.f.UpdateSnowfall()
     local profile = MMaps.GetProfile()
     local snowEnabled = profile.snowEnabled
 
@@ -715,4 +788,54 @@ function MMaps.UpdateSnowfall()
     end
 end
 
--- next feature: lets see lol
+-- --==================================================
+-- -- monitor section
+-- --==================================================
+
+-- execute all funcs
+function MMaps.executeAllFunctions()
+    MMaps.Debug("Loading modules…")
+
+    for _, func in pairs(MMaps.f) do
+        func()
+    end
+end
+
+-- monitor
+local monitor = false
+
+if monitor then
+    local GetTime = GetTime -- Localize frequent calls
+    local gcinfo = gcinfo
+
+    -- Profile wrapper function
+    local function profile(func, name)
+        return function(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
+            local startTime = GetTime()
+            local startMem = gcinfo()
+            local results = {func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)}
+            local deltaTime = GetTime() - startTime
+            local deltaMem = gcinfo() - startMem
+
+            -- Report results (adjust output as needed)
+            print(
+                string.format(
+                    "[PROFILER] %s: Time = %.3fs | Memory = %d KB",
+                    name,
+                    deltaTime,
+                    deltaMem
+                )
+            )
+            return unpack(results)
+        end
+    end
+
+    -- Wrap all functions in the "f" table
+    for name, func in pairs(MMaps.f) do
+        if type(func) == "function" then
+            MMaps.f[name] = profile(func, name)
+        end
+    end
+end
+
+-- -- next feature: lets see lol
