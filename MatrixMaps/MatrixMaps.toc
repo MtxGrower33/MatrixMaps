@@ -1,7 +1,7 @@
 ## Interface: 11200
 ## Title: |cffff6060Matrix Maps|r|cffffffff - ALPHA
 ## Notes: A SexyMaps-Rework for World of Warcraft Vanilla
-## Version: 1.0
+## Version: 1.1
 ## Author: Guzruul
 ## X-Name: MatrixMaps
 ## X-url: https://forum.turtle-wow.org/viewtopic.php?t=18681

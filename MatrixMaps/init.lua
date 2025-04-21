@@ -1,14 +1,18 @@
 -- --==================================================
--- -- MatrixMaps -- How to modify this addon:
--- -- Add new functions to functions.lua, add defaults
--- -- to profiles.lua, then add GUI elements to gui.lua
+-- -- MatrixMaps
+-- --==================================================
+-- To add new features:
+-- [functions.lua] Add new feature to MMaps.features/misc with an apply function
+-- [profiles.lua] Add new feature default value to defaults table if needed
+-- [functions.lua] Add new feature to MMaps.Initializers if setup needed
+-- [gui.lua] Add elements to CreateUI() if UI controls needed
+-- [gui.lua] Add elements to UpdateUI() if UI state updates needed
 -- --==================================================
 
 local ADDON_NAME = "MatrixMaps"
 
 MMaps = CreateFrame("Frame", ADDON_NAME, UIParent)
 MMaps:RegisterEvent("VARIABLES_LOADED")
-MMaps:RegisterEvent("PLAYER_LOGIN")
 
 -- --==================================================
 -- -- tables section
@@ -23,10 +27,8 @@ MMaps.addonInfo = {
 }
 
 -- --==================================================
--- -- generic section
+-- -- debug section
 -- --==================================================
-
-local debug = false
 
 function print(msg)
     if type(msg) == "table" then
@@ -40,10 +42,17 @@ function print(msg)
     end
 end
 
+local debug = false
+
+local debugCount = 0
 function MMaps.Debug(msg)
     if debug then
-        print("[DEBUG] " .. (msg or "nil"))
-        -- print(debugstack(2, 3, 0)) -- Print the call stack for debugging
+        debugCount = debugCount + 1
+        local stack = debugstack(2, 1, 0)
+        local start, finish = string.find(stack, "[^\\/:]+%.lua")
+        local file = start and string.sub(stack, start, finish) or "unknown"
+        print("[DEBUG][ " .. debugCount .. " ][|cff00ff00" .. file .. "|r]: " .. (msg or "nil"))
+        -- print(debugstack(2, 3, 0)) -- can be enabled if needed
     end
 end
 
@@ -76,6 +85,7 @@ end
 -- --==================================================
 
 local function Greeting()
+    MMaps.Debug("Greeting fired")
     local unit = UnitName("player")
     if not MMaps_DB.profiles[unit] or MMaps_DB.profiles[unit].greeting == false then return end
 
@@ -85,14 +95,15 @@ local function Greeting()
 end
 
 MMaps:SetScript("OnEvent", function()
-    if event == "VARIABLES_LOADED" then
-        MMaps.Debug("VARIABLES_LOADED fired")
+    MMaps.Debug("VARIABLES_LOADED fired")
 
-        MMaps.InitProfiles()
-        MMaps.executeAllFunctions()
+    MMaps.InitProfiles()
+    MMaps.InitializeFeatures()
+    MMaps.CreateUI()
 
-        Greeting()
+    Greeting()
 
-        MMaps:UnregisterEvent("VARIABLES_LOADED")
-    end
+    MMaps:UnregisterEvent("VARIABLES_LOADED")
 end)
+
+MMaps.Debug("> init.lua done.")
